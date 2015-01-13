@@ -1,0 +1,20 @@
+Origins:
+========
+This software was originally written in C code by Steven Fortune at AT&T Bell Labs in 1994.
+
+Contributors:
+=============
+* Shane O'Sullivan, who encapsulated it in a C++ class, fixed memory leaks and added accessors to the Voronoi Edges
+* Zhenyu Pan: conversion to Java.
+* James Humphreys: Conversion to Maven project, refactoring, import into Sourceforge
+
+Maven version :
+===============
+The current version is maintained by James Humphreys, and was imported into sourceforge as a Maven-based Java project on 29/06/2011.
+
+Version 0.2:
+============
+* Converted to a Maven project
+* modified floats to doubles to improve accuracy
+* Improved encapsulation
+* Removed all graphics display code
