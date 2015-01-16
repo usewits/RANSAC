@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -8,10 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-//import java.util.function.BiFunction;
 import com.google.common.collect.MinMaxPriorityQueue;
-//import be.humphreys.simplevoronoi.GraphEdge;
-//import be.humphreys.simplevoronoi.Voronoi;
 
 class RANSAC {
 	
@@ -117,19 +115,25 @@ class RANSAC {
 				final double radius = Point.euclDistance(centerPoint,p1);
 				return new Circle(centerPoint,radius);
 			}
+
 			final double aSlope = yDeltaA / xDeltaA;
 			final double bSlope = yDeltaB / xDeltaB;
+
 			if (Double.compare(aSlope,bSlope)==0)
 				throw new AssertionError("The points are colinear!");
+
 			final double circleX = 
 					(aSlope*bSlope*(p1.y - p3.y) + 
 							bSlope*(p1.x+p2.x) - 
 							aSlope*(p2.x+p3.x)) / 
 							(2*(bSlope-aSlope));
+
 			final double circleY = 
 					-1*(circleX - (p1.x+p2.x)/2)/aSlope +  (p1.y+p2.y)/2;
+
 			final Point centerPoint = new Point(circleX,circleY);
 			final double radius = Point.euclDistance(centerPoint,p1);
+
 			return new Circle(centerPoint,radius);
 		}
 	}
@@ -150,16 +154,18 @@ class RANSAC {
 		}
 	}
 
-	
+    private static double scoreModel(Model m) {
+        return m.getNumberOfInliers()/m.circle.radius;
+    }
 	/**
 	 * 
 	 * @param input the List of Points RANSAC will use
 	 * @param iterations the number of trials RANSAC runs
-	 * @param inlierRadius the distance from the center that is accepted as an inlier
+	 * @param inlierEpsilon: a point is in the anulus if its distance to centre is in [radius, radius*(1+inlierEpsilon)]
 	 * @param inlierRatio the number of inliers necessary for an accepted model, scaled to the number of inputs
 	 * @return the List of Circles found
 	 */
-	private static List<Model> doRansac(final List<Point> input, final int iterations, final double inlierRadius, final double inlierRatio) {
+	private static List<Model> doRansac(final List<Point> input, final int iterations, final double inlierEpsilon, final double inlierRatio) {
 		final MinMaxPriorityQueue<Model> models = 
 				MinMaxPriorityQueue.orderedBy(new Comparator<Model>() {
 					@Override
@@ -168,7 +174,12 @@ class RANSAC {
 						// so c(m1,m2) should yield positive, hence 6-4. But the prioqueue
 						// wants the inverse comparator, therefore we use -1 to the original
 						// comparison.
-						return -1*(arg0.getNumberOfInliers() - arg1.getNumberOfInliers());
+                        double comp=scoreModel(arg1) - scoreModel(arg0);
+                        if(comp > 0)
+						    return 1;
+                        if(comp < 0)
+                            return -1;
+                        return 0;
 					}
 				}).maximumSize(10).create();
         //PriorityQueue<Model> models;
@@ -193,18 +204,19 @@ class RANSAC {
 			final List<Point> inliers = new ArrayList<>();
 			for(final Point point : input){
 				double distanceToCircle = Math.abs(Point.euclDistance(circle.getCenter(),point));
-				if (distanceToCircle < inlierRadius){
+				if (distanceToCircle < circle.radius*(1+inlierEpsilon) && distanceToCircle > circle.radius){
 					inliers.add(point);
 				}
 			}
 
 			final int numberOfInliers = inliers.size();
 			// update stats if we found a better model!
-			if (numberOfInliers > input.size()*inlierRatio){
+            // ALWAYS UPDATE SINCE DATA STRUCTURE WILL MAKE THIS NICE
+			//if (numberOfInliers/circle.radius > input.size()*inlierRatio){
 				final Model model = new Model(circle,numberOfInliers);
 				if (!models.contains(model))
 					models.offer(model);
-			}
+			//}
 		}
 		final List<Model> finalModels = new ArrayList<>(models.size());
 		while(!models.isEmpty()) {
@@ -226,21 +238,31 @@ class RANSAC {
 		
 		return result;
 	}
-	
+    
+    private static String rawPrint(Model model) {
+        Circle circle=model.circle;
+        return circle.center.x+", "+circle.center.y+", "+circle.radius+", "+model.numberOfInliers;
+    }
+
+    private static void writeCSV(List<Model> models, String filename) throws FileNotFoundException, IOException {
+        PrintWriter writer = new PrintWriter(filename, "UTF-8");
+        for(Model model : models) 
+		    writer.println(rawPrint(model));
+        writer.close();	
+    } 
+    	
 	static void run() throws FileNotFoundException, IOException {
         System.out.println("Reading CSVs...");
+
+    
 		final List<Point> points1 = readCSV("../data/points1.5.csv");
 		final List<Point> points2 = readCSV("../data/points1.6.csv");
-		
         System.out.println("RANSAC time! (1)");
-		final List<Model> models1 = doRansac(points1,50000,15,.015);
+		final List<Model> models1 = doRansac(points1,100000,.2,.015);
         System.out.println("RANSAC time! (2)");
-		final List<Model> models2 = doRansac(points2,50000,15,.015);
-		
-		System.out.println("Models found for points1:");
-		System.out.println(models1.toString());
-		System.out.println("\nModels found for points2:");
-		System.out.println(models2.toString());
+		final List<Model> models2 = doRansac(points2,100000,.2,.015);
+        writeCSV(models1, "../data/results1.5.csv");
+        writeCSV(models2, "../data/results1.6.csv");
 	}
 	
 	public static void main(final String[] args) throws FileNotFoundException, IOException {
