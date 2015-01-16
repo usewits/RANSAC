@@ -1,0 +1,13 @@
+Arie
+------
+- Code commenten, methods toelichten
+- Programma runnen op verschillende data (gegenereerd en/of gevonden  [UCI Machine Learning repository])
+- Resultaten outputten in volgende vorm: x y r epsilon nInliers
+
+Abe
+-----
+- Q(N), E(N), uitrekenen
+- P(x,y,r,epsilon,nInliers) die afhangt van verdeling ruis
+- Plaatjes maken uit resultaten
+- Compute smallest real width annulus (brute force)
+
