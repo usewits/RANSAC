@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
+//import java.util.function.BiFunction;
 import com.google.common.collect.MinMaxPriorityQueue;
-import be.humphreys.simplevoronoi.GraphEdge;
-import be.humphreys.simplevoronoi.Voronoi;
+//import be.humphreys.simplevoronoi.GraphEdge;
+//import be.humphreys.simplevoronoi.Voronoi;
 
 class RANSAC {
 	
@@ -22,9 +22,11 @@ class RANSAC {
 			this.x = x;
 			this.y = y;
 		}
+
 		@Override public String toString(){
 			return "Point at (" + Double.toString(x) + "," + Double.toString(y) + ")";
 		}
+
 		@Override public int hashCode(){
 			int result = 17;
 			long xSemiHash = Double.doubleToLongBits(x);
@@ -35,11 +37,13 @@ class RANSAC {
 			result = result * 31 + yHash;
 			return result;
 		}
+
 		@Override public boolean equals(final Object o){
 			if (!(o instanceof Point)) return false;
 			final Point p = (Point)o;
 			return Double.compare(p.x,this.x)==0 && Double.compare(p.y,this.y)==0;
 		}
+
 		public static double euclDistance(final Point first,final Point second){
 			return Math.sqrt(
 					Math.pow((first.x-second.x),2) + 
@@ -50,15 +54,18 @@ class RANSAC {
 	private static final class Circle {
 		private final Point center;
 		private final double radius;
+
 		public Circle(final Point center,final double radius){
 			this.center = new Point(center.x,center.y);
 			this.radius = radius;
 		}
+
 		public Point getCenter(){return new Point(center.x,center.y);}
 		public double getRadius(){return radius;}
 		@Override public String toString(){
 			return "Circle at (" + center.toString() + "), with radius " + Double.toString(radius);
 		}
+
 		/** Algorithm stolen from http://paulbourke.net/geometry/circlesphere/*/
 		public static Circle fromPoints(final Point p1,final Point p2,final Point p3){
 			if (!isPerpendicular(p1,p2,p3)) return calcCircle(p1,p2,p3);
@@ -69,6 +76,7 @@ class RANSAC {
 			else if (!isPerpendicular(p3, p1, p2)) return calcCircle(p3, p1, p2);	
 			else throw new AssertionError("Some of the points are perpendicular to some axis!");
 		}
+
 		/** Check for the given points if they are perpendicular to x or y axis.*/
 		private static boolean isPerpendicular(final Point p1,final Point p2,final Point p3){
 			// the original method works by comparing delta_x with a very small value
@@ -92,6 +100,7 @@ class RANSAC {
 			if (xDeltaB) return true;
 			return false;
 		}
+
 		/** Creates the circle using three points.*/
 		private static Circle calcCircle(final Point p1,final Point p2,final Point p3){
 			final double yDeltaA = p2.y - p1.y;
@@ -128,16 +137,19 @@ class RANSAC {
 	private static final class Model {
 		private final Circle circle;
 		private final int numberOfInliers;
+
 		public Model(final Circle circle,final int numberOfInliers){
 			this.circle = circle;
 			this.numberOfInliers = numberOfInliers;
 		}
+
 		public Circle getCircle(){return circle;}
 		public int getNumberOfInliers(){return numberOfInliers;}
 		@Override public String toString(){
 			return circle.toString() + " with " + Integer.toString(numberOfInliers) + " inliers";
 		}
 	}
+
 	
 	/**
 	 * 
@@ -147,9 +159,9 @@ class RANSAC {
 	 * @param inlierRatio the number of inliers necessary for an accepted model, scaled to the number of inputs
 	 * @return the List of Circles found
 	 */
-	private static List<Model> doRansac(final List<Point> input,final int iterations,final double inlierRadius,final double inlierRatio){
+	private static List<Model> doRansac(final List<Point> input, final int iterations, final double inlierRadius, final double inlierRatio) {
 		final MinMaxPriorityQueue<Model> models = 
-				MinMaxPriorityQueue.orderedBy(new Comparator<Model>(){
+				MinMaxPriorityQueue.orderedBy(new Comparator<Model>() {
 					@Override
 					public int compare(Model arg0,Model arg1){
 						// m1 with 6 inliers vs m2 with 4 inliers, m1 is better than m2,
@@ -159,18 +171,23 @@ class RANSAC {
 						return -1*(arg0.getNumberOfInliers() - arg1.getNumberOfInliers());
 					}
 				}).maximumSize(10).create();
+        //PriorityQueue<Model> models;
+        
 		for(int i=0;i<iterations;i++){
 			// randomly select three Points
 			// Points must be distinct!
 			final int index1 = (int)(input.size() * Math.random());
+
 			int index2;
 			do{
 				index2 = (int)(input.size() * Math.random());
-			}while(index2 == index1);
+			} while(index2 == index1);
+
 			int index3;
 			do{
 				index3 = (int)(input.size() * Math.random());
-			}while(index3 == index1 || index3 == index2);
+			} while(index3 == index1 || index3 == index2);
+
 			final Circle circle = Circle.fromPoints(input.get(index1),input.get(index2),input.get(index3));
 			// we now have the circle, now compute the inliers
 			final List<Point> inliers = new ArrayList<>();
@@ -180,6 +197,7 @@ class RANSAC {
 					inliers.add(point);
 				}
 			}
+
 			final int numberOfInliers = inliers.size();
 			// update stats if we found a better model!
 			if (numberOfInliers > input.size()*inlierRatio){
@@ -189,7 +207,7 @@ class RANSAC {
 			}
 		}
 		final List<Model> finalModels = new ArrayList<>(models.size());
-		while(!models.isEmpty()){
+		while(!models.isEmpty()) {
 			finalModels.add(models.poll());
 		}
 		return finalModels;
@@ -198,8 +216,8 @@ class RANSAC {
 	private static List<Point> readCSV(final String fileName) throws FileNotFoundException, IOException {
 		final List<Point> result = new ArrayList<Point>();
 		String line;
-		try(final BufferedReader br = new BufferedReader(new FileReader(fileName))){
-			while((line = br.readLine()) != null){
+		try(final BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+			while((line = br.readLine()) != null) {
 				final String[] items = line.split(",");
 				result.add(new Point(Double.parseDouble(items[0]),
 						Double.parseDouble(items[1])));
@@ -209,12 +227,15 @@ class RANSAC {
 		return result;
 	}
 	
-	static void run() throws FileNotFoundException, IOException{
-		final List<Point> points1 = readCSV("data/points1.5.csv");
-		final List<Point> points2 = readCSV("data/points1.6.csv");
+	static void run() throws FileNotFoundException, IOException {
+        System.out.println("Reading CSVs...");
+		final List<Point> points1 = readCSV("../data/points1.5.csv");
+		final List<Point> points2 = readCSV("../data/points1.6.csv");
 		
-		final List<Model> models1 = doRansac(points1,5000000,15,.015);
-		final List<Model> models2 = doRansac(points2,5000000,15,.015);
+        System.out.println("RANSAC time! (1)");
+		final List<Model> models1 = doRansac(points1,50000,15,.015);
+        System.out.println("RANSAC time! (2)");
+		final List<Model> models2 = doRansac(points2,50000,15,.015);
 		
 		System.out.println("Models found for points1:");
 		System.out.println(models1.toString());
@@ -222,7 +243,7 @@ class RANSAC {
 		System.out.println(models2.toString());
 	}
 	
-	public static void main(final String[] args) throws FileNotFoundException, IOException{
+	public static void main(final String[] args) throws FileNotFoundException, IOException {
 		run();
 	}
 }
