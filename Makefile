@@ -1,4 +1,4 @@
-JAVAC=javac -d bin -classpath ./lib/guava-17.0.jar:. -Xlint:unchecked
+JAVAC=javac -d bin -classpath ./lib/guava-17.0.jar:./src:. -Xlint:unchecked
 sources = $(wildcard src/*.java)
 classes = $(sources:.java=.class)
 
