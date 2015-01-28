@@ -3,13 +3,30 @@ class Circle {
     Point center;
     double radius;
 
+    public Circle(Circle c){
+        this.center = new Point(c.center);
+        this.radius = c.radius;
+    }
+
     public Circle(Point center, double radius){
         this.center = new Point(center.x,center.y);
         this.radius = radius;
     }
 
+    public static boolean inCircle(Circle c, Point p) {
+        double distanceToCircle = Math.abs(Point.euclDistance(c.center,p));
+        return distanceToCircle < c.radius;
+    }
+
+
     @Override public String toString(){
         return "Circle at (" + center.toString() + "), with radius " + Double.toString(radius);
+    }
+
+    @Override public boolean equals(final Object o){
+        if (!(o instanceof Circle)) return false;
+        Circle c = (Circle)o;
+        return Double.compare(radius, c.radius) == 0 && center == c.center;
     }
 
     /** Algorithm stolen from http://paulbourke.net/geometry/circlesphere/*/

@@ -2,12 +2,25 @@ Arie
 ------
 - Code commenten, methods toelichten
 - Programma runnen op verschillende data (gegenereerd en/of gevonden  [UCI Machine Learning repository])
-- Resultaten outputten in volgende vorm: x y r epsilon nInliers
+    - Genereren (op vierkant en weggooien of netjes met hoek)
+- Meerdere circels vinden
+    - Run RANSAC, gooi gevonden weg
 
 Abe
 -----
 - Q(N), E(N), uitrekenen
-- P(x,y,r,epsilon,nInliers) die afhangt van verdeling ruis
-- Plaatjes maken uit resultaten
-- Compute smallest real width annulus (brute force)
+- Toelichten van smallest real width annulus
 
+Klaar
+Abe
+-----
+- Plaatjes maken uit resultaten
+- Compute smallest real width annulus (brute force, Monte Carlo)
+- Resultaten outputten in volgende vorm: x y r epsilon nInliers
+
+Arie
+------
+
+
+Niet/noemen:
+- P(x,y,r,epsilon,nInliers) die afhangt van verdeling ruis
