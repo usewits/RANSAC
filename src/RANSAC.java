@@ -1,8 +1,12 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -12,8 +16,10 @@ import com.google.common.collect.MinMaxPriorityQueue;
  * This class implements the RANSAC algorithm.
  * 
  * It iteravely selects three points in the point set, determines the circle that belongs
- * to those three points, and then computes all the inliers. This is done using a command-
- * line parameter epsilon, which is the thickness of the circle.
+ * to those three points, and then computes all the inliers. This is done using a pre-
+ * set parameter epsilon, which is the thickness of the circle. At this point, no optimiztion
+ * is done yet during the computation: circles are just circles and the models are not updated
+ * to better fit the inliers.
  * @author Arie, Abe
  *
  */
@@ -27,7 +33,7 @@ class RANSAC {
      * @param inlierRatio the number of inliers necessary for an accepted model, scaled to the number of inputs
      * @return the List of Circles found
      */
-    private List<Model> doRansac(final List<Point> input, final int iterations, final double epsilon, final double inlierRatio) {
+    public static List<Model> doRansac(final List<Point> input, final int iterations, final double epsilon, final double inlierRatio) {
     	// this algorithm keeps track of the best n models, here: best 10.
     	// this is an implementation of such a 'queue of 10 best models'.
         final MinMaxPriorityQueue<Model> models = 
@@ -77,7 +83,7 @@ class RANSAC {
     
     /** CSV reader method that reads points. The points are all on a separate line, 
      * coordinates separated by a comma. */
-    private List<Point> readCSV(final String fileName) throws FileNotFoundException, IOException {
+    public static List<Point> readCSV(final String fileName) throws FileNotFoundException, IOException {
         final List<Point> result = new ArrayList<Point>();
         String line;
         try(final BufferedReader br = new BufferedReader(new FileReader(fileName))) {
@@ -92,14 +98,14 @@ class RANSAC {
     }
     
     /** Prints a model in our specified format: all fields on one line, separated by ', '.*/
-    private String rawPrint(Model model) {
+    private static String rawPrint(Model model) {
         Circle circle=model.circle;
         return circle.center.x+", "+circle.center.y+", "+circle.radius+", "+model.numberOfInliers;
     }
 
     /** Writes a list of models to file, using rawPrint on each model.*/
-    private void writeCSV(List<Model> models, String filename) throws FileNotFoundException, IOException {
-        try(final PrintWriter writer = new PrintWriter(filename, "UTF-8")){
+    public static void writeCSV(List<Model> models, String fileName,final boolean append) throws FileNotFoundException, IOException {
+        try(final PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(new File(fileName),append),StandardCharsets.UTF_8))){
         	for(Model model : models) 
         		writer.println(rawPrint(model));
         }   
@@ -127,8 +133,8 @@ class RANSAC {
             m=(Model.improveAnulusApprox(m));
         }
         System.out.println("Writing CSVs..");
-        writeCSV(models1, "../data/results1.5.csv");
-        writeCSV(models2, "../data/results1.6.csv");
+        writeCSV(models1, "../data/results1.5.csv",false);
+        writeCSV(models2, "../data/results1.6.csv",false);
         System.out.println("All done!");
     }
     
