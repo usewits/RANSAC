@@ -1,12 +1,23 @@
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * A model stores information about the circle it encodes, the epsilon used and the
+ * number of inliers that are covered by this circle. The RANSAC algorithm returns
+ * the best model found, and these are compared using the number of inliers.
+ * @author Arie, Abe
+ *
+ */
 class Model {
+	/** The circle this model proposes.*/
     Circle circle;
+    /** The epsilon, or error margin, used for determining the inliers.*/
     double epsilon;
+    /** The list of inliers that this model covers.*/
     final ArrayList<Point> inliers;
     int numberOfInliers;
 
+    /** Creates a new Model from another model. */
     public Model(final Model m) {
         this.circle=new Circle(m.circle);
         this.epsilon=m.epsilon;
@@ -14,6 +25,8 @@ class Model {
         this.numberOfInliers=m.numberOfInliers;
     }
 
+    /** Creates a new Model from a given circle and an epsilon. 
+     * This model has no initial inliers.*/
     public Model(final Circle circle, double epsilon){
         this.circle = circle;
         this.epsilon = epsilon;
@@ -21,6 +34,7 @@ class Model {
         this.numberOfInliers = inliers.size();
     }
 
+    /** Creates a new Model based on a given circle, epsilon and list of inliers.*/
     public Model(final Circle circle, double epsilon, List<Point> inliers){
         this.circle = circle;
         this.epsilon = epsilon;
@@ -28,11 +42,13 @@ class Model {
         this.numberOfInliers = inliers.size();
     }
     
+    /** Determines if a given point is covered by the annulus of the model.*/
     public static boolean inAnulus(Model m, Point p) {
         double distanceToCircle = Math.abs(Point.euclDistance(m.circle.center,p));
         return (distanceToCircle < m.circle.radius*(1+m.epsilon) && distanceToCircle > m.circle.radius);
     }
 
+    /** Adds a new inlier point to the model.*/
     public void add(Point p) {
         inliers.add(p);
         numberOfInliers=inliers.size();
@@ -47,6 +63,16 @@ class Model {
         Model m = (Model)o;
         return circle == m.circle && Double.compare(epsilon, m.epsilon) == 0;
     }
+    
+    @Override
+		public int hashCode(){
+    	int result = 17;
+    	result = result * 31 + circle.hashCode();
+      long epsilonSemiHash = Double.doubleToLongBits(epsilon);
+      int epsilonHash = (int) (epsilonSemiHash ^ (epsilonSemiHash >>> 32));
+      result = result * 31 + epsilonHash;
+      return result;
+		}
 
     public double getScore() {
         //return numberOfInliers/(Math.pow(circle.radius,2)*epsilon*(2+epsilon));//Minimize surface area
@@ -92,7 +118,7 @@ class Model {
         }
     }
 
-    public static Model improveAnulusApprox(final Model m) {
+		public static Model improveAnulusApprox(final Model m) {
         Model result=new Model(m);
         for(int i=0;   i<m.inliers.size(); i++)
         for(int j=i+1; j<m.inliers.size(); j++)

@@ -1,12 +1,15 @@
-
+/** Class defining a point as two coordinates.*/
 class Point {
+	/** The coordinates of this point.*/
     double x,y;
     
+    /** Creates a new Point based on an existing point.*/
     public Point(Point p){
         this.x = p.x;
         this.y = p.y;
     }
 
+    /** Creates a new Point given an x and y.*/
     public Point(double x,double y){
         this.x = x;
         this.y = y;
@@ -33,6 +36,7 @@ class Point {
         return Double.compare(p.x,this.x)==0 && Double.compare(p.y,this.y)==0;
     }
 
+    /** Calculates the euclidean distance between two points.*/
     public static double euclDistance(final Point first,final Point second){
         return Math.sqrt(
                 Math.pow((first.x-second.x),2) + 

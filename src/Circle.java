@@ -1,23 +1,31 @@
-
+/**
+ * Class defining a circle by its centre and radius.
+ * @author Arie
+ *
+ */
 class Circle {
+	/** The centre of this circle.*/
     Point center;
+    /** The radius of this circle.*/
     double radius;
 
+    /** Creates a new Circle using the provided circle.*/
     public Circle(Circle c){
         this.center = new Point(c.center);
         this.radius = c.radius;
     }
 
+    /** Creates a new Circle from a given centre and radius.*/
     public Circle(Point center, double radius){
         this.center = new Point(center.x,center.y);
         this.radius = radius;
     }
 
+    /** Returns whether a point is inside the circle. */
     public static boolean inCircle(Circle c, Point p) {
         double distanceToCircle = Math.abs(Point.euclDistance(c.center,p));
         return distanceToCircle < c.radius;
     }
-
 
     @Override public String toString(){
         return "Circle at (" + center.toString() + "), with radius " + Double.toString(radius);
@@ -29,7 +37,23 @@ class Circle {
         return Double.compare(radius, c.radius) == 0 && center == c.center;
     }
 
-    /** Algorithm stolen from http://paulbourke.net/geometry/circlesphere/*/
+    @Override
+		public int hashCode(){
+    	int result = 17;
+    	result = result * 31 + center.hashCode();
+      long xSemiHash = Double.doubleToLongBits(radius);
+      int xHash = (int) (xSemiHash ^ (xSemiHash >>> 32));
+      result = result * 31 + xHash;
+      return result;
+		}
+
+    /** Generates a Circle based on three points. This is a geometric algorithm 
+     * taken from http://paulbourke.net/geometry/circlesphere/.
+     * 
+     * The given points should not be perpendicular to some axis, because creating
+     * a circle from a line is nonsense!
+     * 
+     * @throws IllegalArgumentException if the points are perpendicular to some axis.*/
     public static Circle fromPoints(Point p1, Point p2, Point p3){
         if (!isPerpendicular(p1,p2,p3)) return calcCircle(p1,p2,p3);
         else if (!isPerpendicular(p1, p3, p2)) return calcCircle(p1, p3, p2);	
@@ -37,10 +61,10 @@ class Circle {
         else if (!isPerpendicular(p2, p3, p1)) return calcCircle(p2, p3, p1);	
         else if (!isPerpendicular(p3, p2, p1)) return calcCircle(p3, p2, p1);	
         else if (!isPerpendicular(p3, p1, p2)) return calcCircle(p3, p1, p2);	
-        else throw new AssertionError("Some of the points are perpendicular to some axis!");
+        else throw new IllegalArgumentException("Some of the points are perpendicular to some axis!");
     }
 
-    /** Check for the given points if they are perpendicular to x or y axis.*/
+    /** Checks for the given points if they are perpendicular to x or y axis.*/
     private static boolean isPerpendicular(Point p1, Point p2, Point p3){
         // the original method works by comparing delta_x with a very small value
         // here I compare the two values using Double.compare
@@ -66,6 +90,7 @@ class Circle {
 
     /** Creates the circle using three points.*/
     private static Circle calcCircle(Point p1, Point p2, Point p3){
+    	// see original website for details about the implementation!
         final double yDeltaA = p2.y - p1.y;
         final double xDeltaA = p2.x - p1.x;
         final double yDeltaB = p3.y - p2.y;
