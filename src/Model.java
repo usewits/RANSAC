@@ -82,8 +82,7 @@ class Model {
         int n=numberOfInliers;
         double e=epsilon;
         double w=circle.radius;
-        //double A=326962.;
-        double A=100000.;
+        double A=1.;
         double Qn=  n*(e+n-1) *
                     Math.pow(2*Math.PI, n-1) * 
                     Math.pow(Math.abs(Math.pow(w,2))/A, n-1) * 

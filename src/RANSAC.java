@@ -30,10 +30,9 @@ class RANSAC {
      * @param input the List of Points RANSAC will use
      * @param iterations the number of trials RANSAC runs
      * @param epsilon determines if a point is in the anulus if its distance to centre is in the interval [radius, radius*(1+epsilon)]
-     * @param inlierRatio the number of inliers necessary for an accepted model, scaled to the number of inputs
      * @return the List of Circles found
      */
-    public static List<Model> doRansac(final List<Point> input, final int iterations, final double epsilon, final double inlierRatio) {
+    public static List<Model> doRansac(final List<Point> input, final int iterations, final double epsilon) {
     	// this algorithm keeps track of the best n models, here: best 10.
     	// this is an implementation of such a 'queue of 10 best models'.
         final MinMaxPriorityQueue<Model> models = 
@@ -114,32 +113,82 @@ class RANSAC {
     /**
      * This function first reads the data, then does RANSAC on each dataset,
      * and finally writes the found circles to file.*/
-    void run() throws FileNotFoundException, IOException {
-        System.out.println("Reading CSVs...");
-    
-        
-        final List<Point> points1 = readCSV("../data/points1.5.csv");
-        final List<Point> points2 = readCSV("../data/points1.6.csv");
-        System.out.println("RANSAC time! (1)");
-        final List<Model> models1 = doRansac(points1,100000,.2,.015);
-        System.out.println("RANSAC time! (2)");
-        final List<Model> models2 = doRansac(points2,100000,.2,.015);
-        
-
-        System.out.println("Improvement! (1)");
-        for(Model m : models1) {
-            //m.improveAnulusMonteCarlo(10000);
-            //WRITE TO NEW LIST TODO
-            m=(Model.improveAnulusApprox(m));
-        }
-        System.out.println("Writing CSVs..");
-        writeCSV(models1, "../data/results1.5.csv",false);
-        writeCSV(models2, "../data/results1.6.csv",false);
-        System.out.println("All done!");
-    }
-    
     public static void main(final String[] args) throws FileNotFoundException, IOException {
-        RANSAC ransac=new RANSAC();
-        ransac.run();
+        int n_iters=-1;
+        double epsilon=-1.0;
+        String filename="default";
+        
+        boolean incorrectParameters=false;
+        if(args.length != 3) {
+            System.out.println("Incorrect call");
+            incorrectParameters = true;
+        } else {
+            try {
+                n_iters = Integer.parseInt(args[0]);
+                epsilon = Double.parseDouble(args[1]);
+                filename = args[2];
+            } catch(NumberFormatException e){
+                System.out.println("Could not parse all parameters");
+                incorrectParameters = true;
+            }
+        }
+
+        if(incorrectParameters) {
+			System.out.println("ExampleRun needs 3 parameters: number_iterations epsilon filename");
+			System.out.println("number_iterations (integer): how many triples RANSAC tries");
+            System.out.println("epsilon (double): the thickness of the anulus RANSAC searches for");
+            System.out.println("filename (string): this program reads from ../data/[filename].csv, and writes to ../data/[filename]_result.csv");
+            return;
+        }
+
+		final List<Point> points = RANSAC.readCSV("../data/"+filename+".csv");
+      
+        //Put all points in a 1x1 box 
+        //Find bounding box
+        double maxX=Double.MIN_VALUE, maxY=Double.MIN_VALUE, minX=Double.MAX_VALUE, minY=Double.MAX_VALUE;
+        for(Point p : points) {
+            if(p.x < minX) minX=p.x;
+            if(p.x > maxX) maxX=p.x;
+            if(p.y < minY) minY=p.y;
+            if(p.y > maxY) maxY=p.y;
+        }
+        double width=maxX-minX;
+        double height=maxY-minY;
+        //Rescale points
+        for(Point p : points) {
+            p.x=((p.x+minX)/width);
+            p.y=((p.y+minY)/height);
+        }
+        
+        //Will find at most 10 models
+        boolean appendToFile=false;
+        for(int i=0; i<100; i++) {
+			final List<Model> models = RANSAC.doRansac(points,n_iters,epsilon);
+			final Model best = models.get(0);
+			final Model updatedBest = best;//Model.improveAnulusApprox(best);
+
+            //Quit when circle is no circle at sigma = 0.05
+            //System.out.println("p = "+1.0/best.getScore());
+            if(best.getScore() < 1e10) {
+                System.out.println("No more high quality anuli!");
+                break;
+            }
+			System.out.println("Found circle " + (i+1));
+
+			models.clear();
+			models.add(updatedBest);
+
+			RANSAC.writeCSV(models,"../data/"+filename+"_result.csv",appendToFile);
+            appendToFile=true;//First clear output file, then append
+
+			for(final Point p : models.get(0).inliers){
+				points.remove(p);
+			}
+            if(points.size() < 3) {
+                System.out.println("All points are in anuli!");
+                break;
+            }
+		}
+        System.out.println("RANSAC done! Results were written to ../data/"+filename+"_result.csv");
     }
 }
