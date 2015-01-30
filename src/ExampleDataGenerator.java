@@ -16,9 +16,10 @@ public class ExampleDataGenerator {
 		int numAnnuli = -1;
 		int pointsPerAnnulus = -1;
 		int numNoise = -1;
+        double circleEpsilon = 0.01;
 
 		boolean incorrectParameters=false;
-		if(args.length != 3) {
+		if(args.length < 3 || args.length > 4) {
 			System.out.println("Incorrect call");
 			incorrectParameters = true;
 		} else {
@@ -26,6 +27,8 @@ public class ExampleDataGenerator {
 				numAnnuli = Integer.parseInt(args[0]);
 				pointsPerAnnulus = Integer.parseInt(args[1]);
 				numNoise = Integer.parseInt(args[2]);
+                if(args.length == 4)
+				    circleEpsilon = Double.parseDouble(args[3]);
 			} catch(NumberFormatException e){
 				System.out.println("Could not parse all parameters");
 				incorrectParameters = true;
@@ -34,6 +37,7 @@ public class ExampleDataGenerator {
 
 		if(incorrectParameters) {
 			System.out.println("ExampleDataGenarator needs 3 integer parameters: number_annuli number_points_per_annulus number_noise_points");
+            System.out.println("The fourth parameters is optional: circle_epsilon (double), is 0.01 by default");
 			return;
 		}
 
@@ -48,7 +52,6 @@ public class ExampleDataGenerator {
 				final double circleX = Math.random();
 				final double circleY = Math.random();
 				final double circleRadius = Math.random()*.9+.1; // make sure we get large enough circles
-				final double circleEpsilon = Math.random()*0.01+0.001;
 				// create a 'perfect' model for this data. Then sample random points and check if
 				// they lie within this model. If yes: random point on circle found!
 				final Model m = new Model(new Circle(new Point(circleX,circleY),circleRadius),circleEpsilon);

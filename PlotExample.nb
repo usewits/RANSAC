@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     12632,        310]
-NotebookOptionsPosition[     12063,        286]
-NotebookOutlinePosition[     12400,        301]
-CellTagsIndexPosition[     12357,        298]
+NotebookDataLength[     12755,        312]
+NotebookOptionsPosition[     12185,        288]
+NotebookOutlinePosition[     12524,        303]
+CellTagsIndexPosition[     12481,        300]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -23,9 +23,9 @@ Cell[BoxData[{
   RowBox[{"filename", "=", "\"\<examplePoints\>\""}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{
-  RowBox[{"epsilon", "=", "0.01"}], ";"}]}], "Input",
+  RowBox[{"epsilon", "=", "0.1"}], ";"}]}], "Input",
  CellChangeTimes->{{3.631604431543426*^9, 3.631604440077036*^9}, {
-  3.631604517158003*^9, 3.6316045203829517`*^9}}],
+   3.631604517158003*^9, 3.6316045203829517`*^9}, 3.631639561604772*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -131,7 +131,8 @@ Cell[BoxData[
            RowBox[{"(", 
             RowBox[{"1", "+", "epsilon"}], ")"}]}]}], "]"}]}], "}"}], "&"}], "/@",
       "results"}], "//", "Graphics"}]}], "]"}]], "Input",
- CellChangeTimes->{{3.631604502245469*^9, 3.631604527894308*^9}}],
+ CellChangeTimes->{{3.631604502245469*^9, 3.631604527894308*^9}, {
+  3.631639545112763*^9, 3.631639605740584*^9}}],
 
 Cell[BoxData[
  GraphicsBox[{{{}, {{}, 
@@ -248,23 +249,23 @@ bkZZ0j9ZgckvN4vfPwhrhP8/Id0/+gAcnKszyj9vY5+I
      CircleBox[{0.4950223581929625, 0.6306638069953128}, 
       0.20197158472248866`], 
      CircleBox[{0.4950223581929625, 0.6306638069953128}, 
-      0.20399130056971354`]}, {
+      0.22216874319473753`]}, {
      CircleBox[{0.3138917190415373, 0.2157355801552886}, 
       0.13512459262666582`], 
      CircleBox[{0.3138917190415373, 0.2157355801552886}, 
-      0.13647583855293247`]}, {
+      0.1486370518893324]}, {
      CircleBox[{0.5877821476573347, 0.7383573903245643}, 
       0.25719688342677877`], 
      CircleBox[{0.5877821476573347, 0.7383573903245643}, 
-      0.25976885226104657`]}, {
+      0.28291657176945667`]}, {
      CircleBox[{0.5472497989014886, 0.46386123556269965`}, 
       0.2622928538937873], 
      CircleBox[{0.5472497989014886, 0.46386123556269965`}, 
-      0.2649157824327252]}, {
+      0.28852213928316606`]}, {
      CircleBox[{0.4180343398159005, 0.42213115203300833`}, 
       0.3068986470623674], 
      CircleBox[{0.4180343398159005, 0.42213115203300833`}, 
-      0.3099676335329911]}}},
+      0.33758851176860416`]}}},
   AspectRatio->1,
   Axes->{True, True},
   AxesLabel->{None, None},
@@ -281,11 +282,12 @@ bkZZ0j9ZgckvN4vfPwhrhP8/Id0/+gAcnKszyj9vY5+I
   PlotRangeClipping->True,
   PlotRangePadding->{{0, 0}, {0, 0}},
   Ticks->{Automatic, Automatic}]], "Output",
- CellChangeTimes->{3.631604531285254*^9}]
+ CellChangeTimes->{
+  3.631604531285254*^9, {3.631639540168867*^9, 3.631639606224881*^9}}]
 }, Open  ]]
 },
-WindowSize->{636, 761},
-WindowMargins->{{0, Automatic}, {Automatic, 18}},
+WindowSize->{1596, 1161},
+WindowMargins->{{Automatic, 0}, {Automatic, 18}},
 FrontEndVersion->"10.0 for Linux x86 (64-bit) (September 9, 2014)",
 StyleDefinitions->"Default.nb"
 ]
@@ -300,17 +302,17 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 293, 7, 55, "Input"],
-Cell[854, 29, 431, 9, 55, "Input"],
-Cell[1288, 40, 686, 17, 55, "Input"],
-Cell[1977, 59, 291, 7, 77, "Input"],
+Cell[558, 20, 315, 7, 55, "Input"],
+Cell[876, 29, 431, 9, 32, "Input"],
+Cell[1310, 40, 686, 17, 32, "Input"],
+Cell[1999, 59, 291, 7, 32, "Input"],
 Cell[CellGroupData[{
-Cell[2293, 70, 103, 1, 32, "Input"],
-Cell[2399, 73, 824, 23, 121, "Output"]
+Cell[2315, 70, 103, 1, 32, "Input"],
+Cell[2421, 73, 824, 23, 55, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[3260, 101, 1091, 32, 99, "Input"],
-Cell[4354, 135, 7693, 148, 367, "Output"]
+Cell[3282, 101, 1140, 33, 32, "Input"],
+Cell[4425, 136, 7744, 149, 367, "Output"]
 }, Open  ]]
 }
 ]
