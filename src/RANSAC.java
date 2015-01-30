@@ -29,7 +29,7 @@ class RANSAC {
 	 * Runs the algorithm described above.
      * @param input the List of Points RANSAC will use
      * @param iterations the number of trials RANSAC runs
-     * @param epsilon determines if a point is in the anulus if its distance to centre is in the interval [radius, radius*(1+epsilon)]
+     * @param epsilon determines if a point is in the annulus if its distance to centre is in the interval [radius, radius*(1+epsilon)]
      * @return the List of Circles found
      */
     public static List<Model> doRansac(final List<Point> input, final int iterations, final double epsilon) {
@@ -65,7 +65,7 @@ class RANSAC {
             Model model=new Model(circle,epsilon);
 
             for(Point point : input)
-                if(Model.inAnulus(model, point))
+                if(Model.inAnnulus(model, point))
                     model.add(point);
             // offer the model to the list of best models. This .contains method
             // is guaranteed to run on a list of at most 10 models!
@@ -136,14 +136,14 @@ class RANSAC {
         if(incorrectParameters) {
 			System.out.println("ExampleRun needs 3 parameters: number_iterations epsilon filename");
 			System.out.println("number_iterations (integer): how many triples RANSAC tries");
-            System.out.println("epsilon (double): the thickness of the anulus RANSAC searches for");
+            System.out.println("epsilon (double): the thickness of the annulus RANSAC searches for");
             System.out.println("filename (string): this program reads from ../data/[filename].csv, and writes to ../data/[filename]_result.csv");
             return;
         }
 
 		final List<Point> points = RANSAC.readCSV("../data/"+filename+".csv");
       
-        //Put all points in a 1x1 box 
+        //Put all points in a 1xwidth box
         //Find bounding box
         double maxX=Double.MIN_VALUE, maxY=Double.MIN_VALUE, minX=Double.MAX_VALUE, minY=Double.MAX_VALUE;
         for(Point p : points) {
@@ -155,9 +155,17 @@ class RANSAC {
         double width=maxX-minX;
         double height=maxY-minY;
         //Rescale points
-        for(Point p : points) {
-            p.x=((p.x+minX)/width);
-            p.y=((p.y+minY)/height);
+        if(height > width) {
+            for(Point p : points) {
+                double tmp=p.x;
+                p.x=((p.y+minY)/width);
+                p.y=((tmp+minX)/width);
+            }
+        } else {
+            for(Point p : points) {
+                p.x=((p.x+minX)/height);
+                p.y=((p.y+minY)/height);
+            }
         }
         
         //Will find at most 10 models
@@ -165,7 +173,7 @@ class RANSAC {
         for(int i=0; i<100; i++) {
 			final List<Model> models = RANSAC.doRansac(points,n_iters,epsilon);
 			final Model best = models.get(0);
-			final Model updatedBest = best;//Model.improveAnulusApprox(best);
+			final Model updatedBest = best;//Model.improveAnnulusApprox(best);
 
             //Quit when circle is no circle at sigma = 0.05
             //System.out.println("p = "+1.0/best.getScore());
