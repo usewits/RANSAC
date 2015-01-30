@@ -10,173 +10,173 @@ import java.util.ArrayList;
  */
 class Model {
 	/** The circle this model proposes.*/
-    Circle circle;
-    /** The epsilon, or error margin, used for determining the inliers.*/
-    double epsilon;
-    /** The list of inliers that this model covers.*/
-    final ArrayList<Point> inliers;
-    int numberOfInliers;
+	Circle circle;
+	/** The epsilon, or error margin, used for determining the inliers.*/
+	double epsilon;
+	/** The list of inliers that this model covers.*/
+	final ArrayList<Point> inliers;
+	int numberOfInliers;
 
-    /** Creates a new Model from another model. */
-    public Model(final Model m) {
-        this.circle=new Circle(m.circle);
-        this.epsilon=m.epsilon;
-        this.inliers=new ArrayList<>(m.inliers);
-        this.numberOfInliers=m.numberOfInliers;
-    }
+	/** Creates a new Model from another model. */
+	public Model(final Model m) {
+		this.circle=new Circle(m.circle);
+		this.epsilon=m.epsilon;
+		this.inliers=new ArrayList<>(m.inliers);
+		this.numberOfInliers=m.numberOfInliers;
+	}
 
-    /** Creates a new Model from a given circle and an epsilon. 
-     * This model has no initial inliers.*/
-    public Model(final Circle circle, double epsilon){
-        this.circle = circle;
-        this.epsilon = epsilon;
-        this.inliers = new ArrayList<>();
-        this.numberOfInliers = inliers.size();
-    }
+	/** Creates a new Model from a given circle and an epsilon. 
+	 * This model has no initial inliers.*/
+	public Model(final Circle circle, double epsilon){
+		this.circle = circle;
+		this.epsilon = epsilon;
+		this.inliers = new ArrayList<>();
+		this.numberOfInliers = inliers.size();
+	}
 
-    /** Creates a new Model based on a given circle, epsilon and list of inliers.*/
-    public Model(final Circle circle, double epsilon, List<Point> inliers){
-        this.circle = circle;
-        this.epsilon = epsilon;
-        this.inliers = new ArrayList<>(inliers);
-        this.numberOfInliers = inliers.size();
-    }
-    
-    /** Determines if a given point is covered by the annulus of the model.*/
-    public static boolean inAnnulus(Model m, Point p) {
-        double distanceToCircle = Math.abs(Point.euclDistance(m.circle.center,p));
-        return (distanceToCircle < m.circle.radius*(1+m.epsilon) && distanceToCircle > m.circle.radius);
-    }
+	/** Creates a new Model based on a given circle, epsilon and list of inliers.*/
+	public Model(final Circle circle, double epsilon, List<Point> inliers){
+		this.circle = circle;
+		this.epsilon = epsilon;
+		this.inliers = new ArrayList<>(inliers);
+		this.numberOfInliers = inliers.size();
+	}
+	
+	/** Determines if a given point is covered by the annulus of the model.*/
+	public static boolean inAnnulus(Model m, Point p) {
+		double distanceToCircle = Math.abs(Point.euclDistance(m.circle.center,p));
+		return (distanceToCircle < m.circle.radius*(1+m.epsilon) && distanceToCircle > m.circle.radius);
+	}
 
-    /** Adds a new inlier point to the model.*/
-    public void add(Point p) {
-        inliers.add(p);
-        numberOfInliers=inliers.size();
-    }
-    
-    @Override public String toString(){
-        return circle.toString() + " with " + Integer.toString(numberOfInliers) + " inliers";
-    }
+	/** Adds a new inlier point to the model.*/
+	public void add(Point p) {
+		inliers.add(p);
+		numberOfInliers=inliers.size();
+	}
+	
+	@Override public String toString(){
+		return circle.toString() + " with " + Integer.toString(numberOfInliers) + " inliers";
+	}
 
-    @Override public boolean equals(final Object o){
-        if (!(o instanceof Model)) return false;
-        Model m = (Model)o;
-        return circle == m.circle && Double.compare(epsilon, m.epsilon) == 0;
-    }
-    
-    @Override
+	@Override public boolean equals(final Object o){
+		if (!(o instanceof Model)) return false;
+		Model m = (Model)o;
+		return circle == m.circle && Double.compare(epsilon, m.epsilon) == 0;
+	}
+	
+	@Override
 		public int hashCode(){
-    	int result = 17;
-    	result = result * 31 + circle.hashCode();
-      long epsilonSemiHash = Double.doubleToLongBits(epsilon);
-      int epsilonHash = (int) (epsilonSemiHash ^ (epsilonSemiHash >>> 32));
-      result = result * 31 + epsilonHash;
-      return result;
+		int result = 17;
+		result = result * 31 + circle.hashCode();
+	  long epsilonSemiHash = Double.doubleToLongBits(epsilon);
+	  int epsilonHash = (int) (epsilonSemiHash ^ (epsilonSemiHash >>> 32));
+	  result = result * 31 + epsilonHash;
+	  return result;
 		}
 
-    public double getScore() {
-        //return numberOfInliers/(Math.pow(circle.radius,2)*epsilon*(2+epsilon));//Minimize surface area
-        //return Math.pow(numberOfInliers,0.9)/circle.radius;//Minimize radius
+	public double getScore() {
+		//return numberOfInliers/(Math.pow(circle.radius,2)*epsilon*(2+epsilon));//Minimize surface area
+		//return Math.pow(numberOfInliers,0.9)/circle.radius;//Minimize radius
 
-        //Statistically good score:
-        int n=numberOfInliers;
-        double e=epsilon;
-        double w=circle.radius;
-        double A=1.;
-        double Qn=  n*(e+n-1) *
-                    Math.pow(2*Math.PI, n-1) * 
-                    Math.pow(Math.abs(Math.pow(w,2))/A, n-1) * 
-                    Math.pow(e, n-2);
-        return 1/Qn;
-    }
+		//Statistically good score:
+		int n=numberOfInliers;
+		double e=epsilon;
+		double w=circle.radius;
+		double A=1.;
+		double Qn=  n*(e+n-1) *
+					Math.pow(2*Math.PI, n-1) * 
+					Math.pow(Math.abs(Math.pow(w,2))/A, n-1) * 
+					Math.pow(e, n-2);
+		return 1/Qn;
+	}
 
-    //Method to improve annulus heuristically using simulated annealing
-    public void improveAnnulusMonteCarlo(int nIterations) {
-        //The initial temperature
-        double t=1000.;
-        for(int i=0; i<nIterations; i++) {
-            t*=0.95;
-            Circle oldCircle=new Circle(circle);
-            double oldEpsilon=epsilon;
-            double oldScore=getScore();
-            
-            //Adjust parameters of model by something between -1 and +1 percent
-            epsilon*=(1.+(Math.random()-.5)*2./100.);
-            circle.radius*=(1.+(Math.random()-.5)*2./100.);
-            circle.center.x*=(1.+(Math.random()-.5)*2./100.);
-            circle.center.y*=(1.+(Math.random()-.5)*2./100.);
+	//Method to improve annulus heuristically using simulated annealing
+	public void improveAnnulusMonteCarlo(int nIterations) {
+		//The initial temperature
+		double t=1000.;
+		for(int i=0; i<nIterations; i++) {
+			t*=0.95;
+			Circle oldCircle=new Circle(circle);
+			double oldEpsilon=epsilon;
+			double oldScore=getScore();
+			
+			//Adjust parameters of model by something between -1 and +1 percent
+			epsilon*=(1.+(Math.random()-.5)*2./100.);
+			circle.radius*=(1.+(Math.random()-.5)*2./100.);
+			circle.center.x*=(1.+(Math.random()-.5)*2./100.);
+			circle.center.y*=(1.+(Math.random()-.5)*2./100.);
 
-            //Calculate number of inliers to check if the model still covers all points
-            numberOfInliers=0;
-            for(Point p : inliers)
-                if(inAnnulus(this,p))
-                   numberOfInliers++; 
-        
-            double newScore=getScore();
-            double deltaScore=oldScore-newScore;
-            //Reject the model if it does not contain all points, or with some probability if the score is worse
-            //At lower temperatures the chance that changes that make the score worse are accepted gets smaller
-            if(Math.exp(-deltaScore/t) < Math.random() || numberOfInliers < inliers.size()) {//Reject new model;
-                circle=oldCircle;
-                epsilon=oldEpsilon;
-            }
-        }
-    }
+			//Calculate number of inliers to check if the model still covers all points
+			numberOfInliers=0;
+			for(Point p : inliers)
+				if(inAnnulus(this,p))
+				   numberOfInliers++; 
+		
+			double newScore=getScore();
+			double deltaScore=oldScore-newScore;
+			//Reject the model if it does not contain all points, or with some probability if the score is worse
+			//At lower temperatures the chance that changes that make the score worse are accepted gets smaller
+			if(Math.exp(-deltaScore/t) < Math.random() || numberOfInliers < inliers.size()) {//Reject new model;
+				circle=oldCircle;
+				epsilon=oldEpsilon;
+			}
+		}
+	}
 
-    //Improve Annulus using brute force
-    public static Model improveAnnulusApprox(final Model m) {
-        Model result=new Model(m);
+	//Improve Annulus using brute force
+	public static Model improveAnnulusApprox(final Model m) {
+		Model result=new Model(m);
 
-        //Consider all triples of points
-        for(int i=0;   i<m.inliers.size(); i++)
-        for(int j=i+1; j<m.inliers.size(); j++)
-        for(int k=j+1; k<m.inliers.size(); k++) {
-            //Construct circle from the three points
-            Circle circ=Circle.fromPoints(m.inliers.get(i), m.inliers.get(j), m.inliers.get(k));
-            double close=-1.0;
-            double far=0.0;
-            int nInside=0;
-            int nOutside=0;
-            for(int p=0; p<m.inliers.size(); p++) {
-                if(p == i || p == j || p == k) {
-                    nInside++;
-                    nOutside++;
-                }
+		//Consider all triples of points
+		for(int i=0;   i<m.inliers.size(); i++)
+		for(int j=i+1; j<m.inliers.size(); j++)
+		for(int k=j+1; k<m.inliers.size(); k++) {
+			//Construct circle from the three points
+			Circle circ=Circle.fromPoints(m.inliers.get(i), m.inliers.get(j), m.inliers.get(k));
+			double close=-1.0;
+			double far=0.0;
+			int nInside=0;
+			int nOutside=0;
+			for(int p=0; p<m.inliers.size(); p++) {
+				if(p == i || p == j || p == k) {
+					nInside++;
+					nOutside++;
+				}
 
-                if(Circle.inCircle(circ, m.inliers.get(p)))
-                    nInside++;
-                else
-                    nOutside++;
+				if(Circle.inCircle(circ, m.inliers.get(p)))
+					nInside++;
+				else
+					nOutside++;
 
-                //Calculate distance to point furthest and closest to centre of circle
-                double dist=Point.euclDistance(circ.center, m.inliers.get(p));
-                if(dist < close) close=dist;
-                if(dist > far || far < 0.0) far=dist;
-            }
-            
-            //We have found a potential smallest inner circle if all inliers lie outside circ
-            //We have found a potential smallest outer circle if all inliers lie inside circ
-            boolean circIsInside = (nOutside == m.inliers.size());
-            boolean circIsOutside = (nInside == m.inliers.size());
+				//Calculate distance to point furthest and closest to centre of circle
+				double dist=Point.euclDistance(circ.center, m.inliers.get(p));
+				if(dist < close) close=dist;
+				if(dist > far || far < 0.0) far=dist;
+			}
+			
+			//We have found a potential smallest inner circle if all inliers lie outside circ
+			//We have found a potential smallest outer circle if all inliers lie inside circ
+			boolean circIsInside = (nOutside == m.inliers.size());
+			boolean circIsOutside = (nInside == m.inliers.size());
 
-            //Construct the other circle in the annulus
-            if(circIsInside || circIsOutside) {
-                Model current;
-                if(circIsInside) {
-                    current=new Model(circ, far/circ.radius - 1, m.inliers);
-                } else {
-                    double epsilon=circ.radius/close - 1.0;
-                    circ.radius=close;
-                    current=new Model(circ, epsilon, m.inliers);
-                }
-                //Save the annulus found is better than the last annulus found
-                if(current.getScore() > result.getScore()) {
-                    result=current;
-                }
-            }
-        }
-        return result;
-    }
-
+			//Construct the other circle in the annulus
+			if(circIsInside || circIsOutside) {
+				Model current;
+				if(circIsInside) {
+					current=new Model(circ, far/circ.radius - 1, m.inliers);
+				} else {
+					double epsilon=circ.radius/close - 1.0;
+					circ.radius=close;
+					current=new Model(circ, epsilon, m.inliers);
+				}
+				//Save the annulus found is better than the last annulus found
+				if(current.getScore() > result.getScore()) {
+					result=current;
+				}
+			}
+		}
+		return result;
+	}
 }
+
 
