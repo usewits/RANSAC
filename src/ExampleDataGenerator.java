@@ -18,6 +18,7 @@ public class ExampleDataGenerator {
 		int numNoise = -1;
         double circleEpsilon = 0.01;
 
+		// this part is just conversion logic, read on!
 		boolean incorrectParameters=false;
 		if(args.length < 3 || args.length > 4) {
 			System.out.println("Incorrect call");
@@ -41,6 +42,7 @@ public class ExampleDataGenerator {
 			return;
 		}
 
+		// this is where the fun starts!
 		try(final PrintWriter writer = new PrintWriter("../data/examplePoints.csv")){
 			//Generate noise
 			System.out.println("Generating "+numNoise+" noise points");
