@@ -16,7 +16,7 @@ public class ExampleDataGenerator {
 		int numAnnuli = -1;
 		int pointsPerAnnulus = -1;
 		int numNoise = -1;
-
+		// this part is just conversion logic, read on!
 		boolean incorrectParameters=false;
 		if(args.length != 3) {
 			System.out.println("Incorrect call");
@@ -37,6 +37,7 @@ public class ExampleDataGenerator {
 			return;
 		}
 
+		// this is where the fun starts!
 		try(final PrintWriter writer = new PrintWriter("../data/examplePoints.csv")){
 			//Generate noise
 			System.out.println("Generating "+numNoise+" noise points");
